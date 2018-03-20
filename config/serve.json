@@ -1,0 +1,29 @@
+{
+  "$schema": "https://dev.office.com/json-schemas/core-build/serve.schema.json",
+  "port": 4321,
+  "https": true,
+  "serveConfigurations": {
+    "default": {
+      "pageUrl": "https://smdevelop.sharepoint.com/sites/appext/SitePages/Home.aspx",
+      "customActions": {
+        "59419028-0415-4364-9672-33b7b5b02b55": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {
+            "testMessage": "Test message"
+          }
+        }
+      }
+    },
+    "helloWorld": {
+      "pageUrl": "https://smdevelop.sharepoint.com/sites/appext/SitePages/Home.aspx",
+      "customActions": {
+        "59419028-0415-4364-9672-33b7b5b02b55": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {
+            "testMessage": "Test message"
+          }
+        }
+      }
+    }
+  }
+}
