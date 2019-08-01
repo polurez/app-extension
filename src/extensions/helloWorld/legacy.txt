@@ -1,0 +1,114 @@
+
+    function _getAppFullUrl(absoluteUrl) {
+      let userCustomActionUrl = absoluteUrl + '/_api/Web/UserCustomActions';
+      let xhr = new XMLHttpRequest();
+
+      xhr.open('GET', userCustomActionUrl, false);
+      xhr.setRequestHeader('Accept', 'application/json;odata=verbose');
+      xhr.send();
+
+      if (xhr.status === 200) {
+        let data = JSON.parse(xhr.response);
+
+        for (let i = 0; i < data.d.results.length; i++) {
+          if ((data.d.results[i].Description) && (data.d.results[i].Description.indexOf('mmapExtensionHandler') + 1)) {
+            return data.d.results[i].Description.substring(data.d.results[i].Description.indexOf('?') + 1, data.d.results[i].Description.length);
+          }
+        }
+      }
+    }
+
+    /**
+     * @function _clickHandler
+     * @description Custom handler on click. Open mmap in browser.
+     * @param {Object} event clickEvent
+     * @returns {Boolean} Always return 'false'
+     */
+    function _clickHandler(event) {
+
+      if(event.target.className == 'ItemTile-frame' && event.target.parentElement.parentElement && event.target.parentElement.parentElement.href.lastIndexOf('.mmap') != event.target.parentElement.parentElement.href.length -5) return; //for NOT mmap Frames
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      var path = '';
+
+      if (event.target.className == 'ItemTile-frame') path = event.target.parentElement.parentElement.href.toLowerCase();
+      else path = event.target.href.toLowerCase();
+
+      path = path.replace(window.location.origin, '');
+      var webAbsoluteUrl = window.location.origin + webServerRelativeUrl;
+
+      if (webServerRelativeUrl === '/')
+        webServerRelativeUrl = '';
+      if ((webServerRelativeUrl.length > 1) && (webServerRelativeUrl.indexOf('/') == -1))
+        webServerRelativeUrl = '../../../' + webServerRelativeUrl;
+
+      var url = webServerRelativeUrl + '/_api/web/getfilebyserverrelativeurl(\'' + path + '\')/ListItemAllFields?$expand=ParentList';
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url);
+      xhr.setRequestHeader('Accept', 'application/json;odata=verbose');
+      xhr.onload = function () {
+        var temp = this as XMLHttpRequest;
+        var data = JSON.parse(temp.response);
+        var listId = data.d.ParentList.Id;
+        var itemId = data.d.Id;
+        if (appWebFullUrl.indexOf(webServerRelativeUrl + '/MindManagerSharePointApp') == -1) {
+          appWebFullUrl += webServerRelativeUrl + '/MindManagerSharePointApp';
+        }
+        let newTabUrl = appWebFullUrl + '/Pages/Default.aspx?SPHostUrl=' + encodeURI(webAbsoluteUrl) + '&SPAppWebUrl=' + encodeURI(appWebFullUrl) + '&SPListItemId=' + itemId + '&SPListId=%7B' + listId + '%7D';
+        
+        window.open(newTabUrl, '_blank');
+      };
+      xhr.send();
+
+      return false;
+    }
+
+        /**
+     * @function addClickHandler
+     * @description Change default clickHandler to custom in all mmap files
+     */
+    function addClickHandler() {
+      let aa = document.getElementsByTagName('a');
+      let frames = document.getElementsByClassName('ItemTile-frame');
+
+      for (let i = 0; i < frames.length; i++) {
+          frames[i].addEventListener("click", _clickHandler);
+      }
+
+      for (let i = 0; i < aa.length; i++) {
+          if ((aa[i].href.indexOf('.mmap') == aa[i].href.length - 5)) {
+            aa[i].addEventListener("click", _clickHandler);
+        }
+      }
+    }
+
+    
+    function searchResultClickHandler(event){
+      if(event.target.href && (event.target.href.indexOf('DispForm') !== -1)){
+        event.preventDefault();
+        event.stopPropagation();
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', event.target.href);
+        xhr.setRequestHeader('Accept', 'application/json;odata=verbose');
+        xhr.onload = function () {
+          let temp = this as XMLHttpRequest;
+          
+          let t = temp.response.substring(temp.response.indexOf("\"item\""));
+          let item = JSON.parse(t.substring(8, t.indexOf('}') + 1));
+          let ctx = temp.response.substring(temp.response.indexOf('_spPageContextInfo'));
+          let _spPageContexInfo = JSON.parse(ctx.substring(19, ctx.indexOf('};') + 1));
+
+          //init params for final link
+          let SPHostUrl = _spPageContexInfo.webAbsoluteUrl;
+          let SPAppWebUrl = _getAppFullUrl(SPHostUrl) + _spPageContexInfo.webServerRelativeUrl + "/MindManagerSharePointApp";
+          let SPListItemId = item.Id;
+          let SPListId = _spPageContexInfo.listId.substring(1, _spPageContexInfo.listId.length - 1);
+
+          window.location.href = SPAppWebUrl + '/Pages/Default.aspx?SPHostUrl=' + encodeURI(SPHostUrl) + '&SPAppWebUrl=' + encodeURI(SPAppWebUrl) + '&SPListItemId=' + SPListItemId + '&SPListId=%7B' + SPListId + '%7D';
+        };
+        xhr.send();
+      }
+    }
