@@ -3,14 +3,14 @@
   "solution": {
     "name": "MindManager Viewer App Extension",
     "id": "6e10acb9-514b-4c91-9679-615ece497d5d",
-    "version": "1.0.0.49",
-    "includeClientSideAssets": true,
+    "version": "1.0.0.50",
+    "includeClientSideAssets": false,
     "features": [
       {
         "title": "Application Extension - Deployment of custom action.",
         "description": "Deploys a custom action with ClientSideComponentId association",
         "id": "f6a3caff-3f2e-43b4-b7b5-e6fd41463af3",
-        "version": "1.0.0.49",
+        "version": "1.0.0.50",
         "assets": {
           "elementManifests": [
             "elements.xml"
